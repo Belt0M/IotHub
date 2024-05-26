@@ -1,2 +1,80 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using Microsoft.Azure.Devices.Client;
+using Microsoft.Extensions.Configuration;
+
+namespace IndustrialIoT
+{
+    public class Program
+    {
+        public static int deviceNumber;
+
+        static async Task Main(string[] args)
+        {
+            var curPath = AppContext.BaseDirectory;
+
+            if (curPath.Contains("\\bin\\Debug\\net6.0\\"))
+            {
+                curPath = curPath.Split("\\bin\\Debug\\net6.0\\")[0];
+            }
+
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(curPath)
+                .AddJsonFile("config.json", optional: false)
+                .Build();
+
+            var opcConnectionString = configuration["OPC_CONNECTION_STRING"];
+
+            if (opcConnectionString == null)
+            {
+                Console.Error.WriteLine("Azure or OPC conection string isn't provided");
+                return;
+            }
+
+            OpcManager opcManager = new(opcConnectionString);
+
+            opcManager.Start();
+
+            var list = configuration.GetSection("DEVICES").GetChildren()
+                .Select(d =>
+                {
+                    var azureDeviceId = d["azureDeviceId"];
+
+                    if (azureDeviceId == null)
+                    {
+                        Console.Error.WriteLine($"{d} Not enough config data!");
+                        return null;
+                    }
+
+                    return azureDeviceId;
+                })
+                .Where(d => d != null).ToList();
+
+            Console.WriteLine("Choose a device number:");
+
+            deviceNumber = Convert.ToInt32(Console.ReadLine());
+
+            if (deviceNumber <= 0 || deviceNumber > list.Count)
+            {
+                Console.Error.WriteLine("Invalid device number");
+                return;
+            }
+
+            string deviceConnectionString = list[deviceNumber - 1];
+
+            Console.WriteLine(deviceConnectionString);
+
+            using var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt);
+
+            var device = new IoTDevice(deviceClient, opcManager);
+
+            Console.WriteLine($"Connection success!");
+
+            await device.InitializeHandlers();
+
+            while (true)
+            {
+                await device.SendMessages(opcManager.client, deviceNumber);
+                Thread.Sleep(1000);
+            }
+        }
+    }
+}
