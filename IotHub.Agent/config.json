@@ -1,12 +1,8 @@
 {
-  "OPC_CONNECTION_STRING": "opc.tcp://localhost:4840/",
-  "AZURE_IOT_CONNECTION_STRING": "HostName=IoT-Lato-2024.azure-devices.net;",
-
-  "DEVICES": [
-    {
-      "deviceName": "device_1",
-      "opcNodeId": "ns=2;s=Device 1",
-      "azureDeviceId": "DeviceId=device_1;SharedAccessKey=KTFlSqFrOhTDFGui2IyzGYPH7WCXsAeuBAIoTO+Rmcg="
-    }
-  ]
+	"OPC_CONNECTION_STRING": "opc.tcp://localhost:4840/",
+	"DEVICES": [
+		{
+			"azureDeviceId": "HostName=IoT-Lato-2024.azure-devices.net;DeviceId=device_1;SharedAccessKey=KTFlSqFrOhTDFGui2IyzGYPH7WCXsAeuBAIoTO+Rmcg="
+		}
+	]
 }
