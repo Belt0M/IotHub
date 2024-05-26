@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IotHub.Agent", "IotHub.Agent\IotHub.Agent.csproj", "{B143E6DE-5685-4EB1-AB37-2B048E664C10}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B143E6DE-5685-4EB1-AB37-2B048E664C10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B143E6DE-5685-4EB1-AB37-2B048E664C10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B143E6DE-5685-4EB1-AB37-2B048E664C10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B143E6DE-5685-4EB1-AB37-2B048E664C10}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F809E0A-900C-4EA6-B536-99BC65FE3B57}
+	EndGlobalSection
+EndGlobal
