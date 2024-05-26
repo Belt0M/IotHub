@@ -55,6 +55,35 @@ namespace IndustrialIoT
 
         #endregion
 
+        #region Direct Methods
+        private async Task<MethodResponse> EmergencyStopHandler(MethodRequest methodRequest, object userContext)
+        {
+            Console.WriteLine($"\t METHOD EXECUTED: {methodRequest.Name}");
+
+            await opcManager.EmergencyStop();
+
+            return new MethodResponse(0);
+        }
+
+        private async Task<MethodResponse> ResetErrorStatusHandler(MethodRequest methodRequest, object userContext)
+        {
+            Console.WriteLine($"\t METHOD EXECUTED: {methodRequest.Name}");
+
+            await opcManager.ResetErrorStatus();
+
+            return new MethodResponse(0);
+        }
+
+        private async Task<MethodResponse> DefaultServiceHandler(MethodRequest methodRequest, object userContext)
+        {
+            Console.WriteLine($"\t DEFAULT METHOD EXECUTED: {methodRequest.Name}");
+
+            await Task.Delay(1000);
+
+            return new MethodResponse(0);
+        }
+        #endregion
+
         #region Device Twin
 
         public async Task UpdateTwinAsync(OpcClient opcClient)
