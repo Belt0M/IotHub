@@ -1,0 +1,25 @@
+﻿SELECT
+    workorderid as WorkOrderID,
+    System.Timestamp AS WindowEnd,
+    SUM(goodCount) * 100.0 / (SUM(goodCount) + SUM(badCount)) AS GoodProductionPercentage
+INTO
+    [production-kpi]
+FROM
+    [IoT-Lato-2024]
+GROUP BY
+    workorderid,
+    TumblingWindow(minute, 5)
+
+SELECT
+    workorderid as WorkOrderID,
+    System.Timestamp AS WindowEnd,
+    AVG(temperature) AS AvgTemperature,
+    MIN(temperature) AS MinTemperature,
+    MAX(temperature) AS MaxTemperature
+INTO
+    [temperature]
+FROM
+    [IoT-Lato-2024]
+GROUP BY
+    workorderid,
+    HoppingWindow(minute,5,1)
