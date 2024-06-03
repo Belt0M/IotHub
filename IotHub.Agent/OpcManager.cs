@@ -14,10 +14,9 @@ namespace IndustrialIoT
 
         public void Start()
         {
-            // Console.WriteLine(File.ReadAllLines(currentPath + "/Config.txt")[1].ToString());
             client.Connect();
 
-            Console.WriteLine("Device list:");
+            Console.WriteLine("List of available devices for selection: \n");
 
             var node = client.BrowseNode(OpcObjectTypes.ObjectsFolder);
 
@@ -26,6 +25,8 @@ namespace IndustrialIoT
                 {
                     Console.WriteLine($"{childNode.Name}");
                 }
+
+            Console.WriteLine("\n");
         }
 
         public async Task EmergencyStop()

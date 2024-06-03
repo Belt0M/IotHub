@@ -26,6 +26,7 @@ namespace IndustrialIoT
             if (opcConnectionString == null)
             {
                 Console.Error.WriteLine("Azure or OPC conection string isn't provided");
+
                 return;
             }
 
@@ -40,7 +41,7 @@ namespace IndustrialIoT
 
                     if (azureDeviceId == null)
                     {
-                        Console.Error.WriteLine($"{d} Not enough config data!");
+                        Console.Error.WriteLine($"{d} Incorrect devices config data!");
                         return null;
                     }
 
@@ -48,7 +49,7 @@ namespace IndustrialIoT
                 })
                 .Where(d => d != null).ToList();
 
-            Console.WriteLine("Choose a device number:");
+            Console.WriteLine("Choose and input a device number from the list above:");
 
             deviceNumber = Convert.ToInt32(Console.ReadLine());
 
@@ -60,19 +61,18 @@ namespace IndustrialIoT
 
             string deviceConnectionString = list[deviceNumber - 1];
 
-            Console.WriteLine(deviceConnectionString);
-
             using var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt);
 
-            var device = new IoTDevice(deviceClient, opcManager);
+            var iotDevice = new IoTDevice(deviceClient, opcManager);
 
-            Console.WriteLine($"Connection success!");
+            Console.WriteLine($"\nConnection successfully established!");
 
-            await device.InitializeHandlers();
+            await iotDevice.InitializeHandlers();
 
             while (true)
             {
-                await device.SendMessages(opcManager.client, deviceNumber);
+                await iotDevice.SendMessages(opcManager.client, deviceNumber);
+
                 Thread.Sleep(1000);
             }
         }

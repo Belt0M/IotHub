@@ -17,6 +17,9 @@ namespace IndustrialIoT
 
     public class IoTDevice
     {
+        bool started = true;
+        bool update = false;
+
         private readonly DeviceClient client;
         private OpcManager opcManager;
 
@@ -29,20 +32,21 @@ namespace IndustrialIoT
 
         #region Sending Messages
 
-        public async Task SendMessages(OpcClient opcClient, int deviceNumber)
+        public async Task SendMessages(OpcClient opcClient, int deviceID)
         {
-            var data = new
+            var objectToSend = new
             {
-                productionStatus = opcClient.ReadNode($"ns=2;s=Device {deviceNumber}/ProductionStatus").Value,
-                workorderId = opcClient.ReadNode($"ns=2;s=Device {deviceNumber}/WorkorderId").Value,
-                goodCount = opcClient.ReadNode($"ns=2;s=Device {deviceNumber}/GoodCount").Value,
-                badCount = opcClient.ReadNode($"ns=2;s=Device {deviceNumber}/BadCount").Value,
-                temperature = opcClient.ReadNode($"ns=2;s=Device {deviceNumber}/Temperature").Value
+                productionStatus = opcClient.ReadNode($"ns=2;s=Device {deviceID}/ProductionStatus").Value,
+                workorderId = opcClient.ReadNode($"ns=2;s=Device {deviceID}/WorkorderId").Value,
+                goodCount = opcClient.ReadNode($"ns=2;s=Device {deviceID}/GoodCount").Value,
+                badCount = opcClient.ReadNode($"ns=2;s=Device {deviceID}/BadCount").Value,
+                temperature = opcClient.ReadNode($"ns=2;s=Device {deviceID}/Temperature").Value,
+                errorsCode = opcClient.ReadNode($"ns=2;s=Device {deviceID}/DeviceError").Value
             };
 
-            var dataString = JsonConvert.SerializeObject(data);
+            var serializedObject = JsonConvert.SerializeObject(objectToSend);
 
-            Message eventMessage = new Message(Encoding.UTF8.GetBytes(dataString));
+            Message eventMessage = new Message(Encoding.UTF8.GetBytes(serializedObject));
 
             eventMessage.ContentType = MediaTypeNames.Application.Json;
 
@@ -50,7 +54,7 @@ namespace IndustrialIoT
 
             await client.SendEventAsync(eventMessage);
 
-            await UpdateTwinAsync(opcManager.client);
+            twinUpdateListener(opcClient);
         }
 
         #endregion
@@ -58,7 +62,7 @@ namespace IndustrialIoT
         #region Direct Methods
         private async Task<MethodResponse> EmergencyStopHandler(MethodRequest methodRequest, object userContext)
         {
-            Console.WriteLine($"\t METHOD EXECUTED: {methodRequest.Name}");
+            Console.WriteLine($"\t {methodRequest.Name} direct method was executed!");
 
             await opcManager.EmergencyStop();
 
@@ -67,7 +71,7 @@ namespace IndustrialIoT
 
         private async Task<MethodResponse> ResetErrorStatusHandler(MethodRequest methodRequest, object userContext)
         {
-            Console.WriteLine($"\t METHOD EXECUTED: {methodRequest.Name}");
+            Console.WriteLine($"\t {methodRequest.Name} direct method was executed!");
 
             await opcManager.ResetErrorStatus();
 
@@ -76,7 +80,7 @@ namespace IndustrialIoT
 
         private async Task<MethodResponse> DefaultServiceHandler(MethodRequest methodRequest, object userContext)
         {
-            Console.WriteLine($"\t DEFAULT METHOD EXECUTED: {methodRequest.Name}");
+            Console.WriteLine($"\t Default direct method was executed: {methodRequest.Name}");
 
             await Task.Delay(1000);
 
@@ -116,25 +120,92 @@ namespace IndustrialIoT
 
             var reportedProperties = new TwinCollection();
 
-            reportedProperties["productionRate"] = opcClient.ReadNode($"ns=2;s=Device {Program.deviceNumber}/ProductionRate").Value;
-            reportedProperties["deviceErrors"] = errorsString;
+            reportedProperties["prodRate"] = opcClient.ReadNode($"ns=2;s=Device {Program.deviceNumber}/ProductionRate").Value;
+            reportedProperties["errorsList"] = errorsString;
+            reportedProperties["errorsCode"] = errors;
+            reportedProperties["productionRate"] = null;
+            reportedProperties["deviceErrorsString"] = null;
+            reportedProperties["deviceErrorsCode"] = null;
 
             await client.UpdateReportedPropertiesAsync(reportedProperties);
         }
 
         private async Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
         {
-            int value = desiredProperties["productionRate"];
+            int value = desiredProperties["prodRate"];
 
             await opcManager.SetProductionRate(value);
 
             TwinCollection reportedProperties = new TwinCollection();
 
-            reportedProperties["productionRate"] = value;
+            reportedProperties["prodRate"] = value;
 
             await client.UpdateReportedPropertiesAsync(reportedProperties).ConfigureAwait(false);
         }
 
+        #endregion
+
+        #region UpdateTwinOnChange
+        public async void twinUpdateListener(OpcClient opcClient)
+        {
+            if (started)
+            {
+                await UpdateTwinAsync(opcManager.client);
+
+                started = false;
+
+                Console.Write("Device startup twin configuration was established.");
+            }
+            else
+            {
+                Twin twin = await client.GetTwinAsync();
+
+                int clientValue = (int)opcClient.ReadNode($"ns=2;s=Device {Program.deviceNumber}/ProductionRate").Value;
+                int twinValue = twin.Properties.Reported["prodRate"];
+
+                StringBuilder errorBuilder = new StringBuilder();
+
+                int errors = (int)opcClient.ReadNode($"ns=2;s=Device {Program.deviceNumber}/DeviceError").Value;
+
+                if ((errors & Convert.ToInt32(Errors.Unknown)) != 0)
+                {
+                    errorBuilder.Append("Unknown ");
+                }
+
+                if ((errors & Convert.ToInt32(Errors.SensorFailue)) != 0)
+                {
+                    errorBuilder.Append("SensorFailure ");
+                }
+
+                if ((errors & Convert.ToInt32(Errors.PowerFailure)) != 0)
+                {
+                    errorBuilder.Append("PowerFailure ");
+                }
+
+                if ((errors & Convert.ToInt32(Errors.EmergencyStop)) != 0)
+                {
+                    errorBuilder.Append("Emergency stop ");
+                }
+
+                string errorsString = errorBuilder.ToString();
+                string twinError = twin.Properties.Reported["errorsList"];
+
+                if (twinValue != clientValue)
+                {
+                    await UpdateTwinAsync(opcManager.client);
+
+                    Console.WriteLine("ProductionRate Update");
+                }
+
+                if (twinError != errorsString)
+                {
+                    await UpdateTwinAsync(opcManager.client);
+
+                    Console.WriteLine("Error Update");
+                }
+
+            }
+        }
         #endregion
 
         public async Task InitializeHandlers()
