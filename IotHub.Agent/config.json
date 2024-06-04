@@ -3,6 +3,12 @@
 	"DEVICES": [
 		{
 			"azureDeviceId": "HostName=IoT-Lato-2024.azure-devices.net;DeviceId=device_1;SharedAccessKey=KTFlSqFrOhTDFGui2IyzGYPH7WCXsAeuBAIoTO+Rmcg="
-		}
+		},
+		{
+			"azureDeviceId": "HostName=IoT-Lato-2024.azure-devices.net;DeviceId=device_2;SharedAccessKey=ZPT6YyKGeIYPmwuIZnOxp34+SgjDgseQZGa7TfXYxZ8="
+		},
+		{
+			"azureDeviceId": "HostName=IoT-Lato-2024.azure-devices.net;DeviceId=device_3;SharedAccessKey=j9pUQZzIKShUh+ktC/hskWVryfeq8svIeO04LtFavZk="
+		},
 	]
 }

@@ -25,7 +25,7 @@ namespace IndustrialIoT
 
             if (opcConnectionString == null)
             {
-                Console.Error.WriteLine("Azure or OPC conection string isn't provided");
+                Console.Error.WriteLine("OPC conection string isn't provided");
 
                 return;
             }
@@ -56,6 +56,7 @@ namespace IndustrialIoT
             if (deviceNumber <= 0 || deviceNumber > list.Count)
             {
                 Console.Error.WriteLine("Invalid device number");
+
                 return;
             }
 

@@ -123,9 +123,6 @@ namespace IndustrialIoT
             reportedProperties["prodRate"] = opcClient.ReadNode($"ns=2;s=Device {Program.deviceNumber}/ProductionRate").Value;
             reportedProperties["errorsList"] = errorsString;
             reportedProperties["errorsCode"] = errors;
-            reportedProperties["productionRate"] = null;
-            reportedProperties["deviceErrorsString"] = null;
-            reportedProperties["deviceErrorsCode"] = null;
 
             await client.UpdateReportedPropertiesAsync(reportedProperties);
         }
