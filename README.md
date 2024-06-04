@@ -84,9 +84,7 @@ Previously configured devices will appear for selection in the open console wind
 
 ## 3. Monitoring Device Telemetry
 
-The project folder contains the archive "Azure.IoT.Explorer.Preview.0.15.8.zip"
-
-- Unzip it and open the single file in it
+To work with data from the agent more easily, you need to download Azure Explorer
 
 This is an analogue of the web Azure portal, only somewhat simplified and more convenient for monitoring the agent's work
 
